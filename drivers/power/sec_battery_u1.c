@@ -28,7 +28,9 @@
 #include <linux/android_alarm.h>
 #include <plat/adc.h>
 #include <linux/power/sec_battery_u1.h>
-
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
 #if defined(CONFIG_TARGET_LOCALE_NA) || defined(CONFIG_TARGET_LOCALE_NAATT)
 #define POLLING_INTERVAL	(10 * 1000)
 #else
@@ -1536,7 +1538,13 @@ static int sec_bat_enable_charging_sub(struct sec_bat_info *info, bool enable)
 			switch (info->cable_type) {
 			case CABLE_TYPE_USB:
 				val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
+#if defined(CONFIG_FORCE_FAST_CHARGE)
+				if(force_fast_charge == 1)
+					val_chg_current.intval = 500;
+				else val_chg_current.intval = 450;
+#else
 				val_chg_current.intval = 450;	/* mA */
+#endif
 				break;
 			case CABLE_TYPE_AC:
 				val_type.intval = POWER_SUPPLY_STATUS_CHARGING;
